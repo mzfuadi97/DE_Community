@@ -1,0 +1,16 @@
+env: dev
+data_sources:
+  - type: api_logs
+    path: api_logs.jsonl
+  - type: user_activities
+    path: user_activities.jsonl
+transformations:
+  - name: filter_error_logs
+  - name: parse_timestamp
+  - name: anonymize_user_id
+  - name: add_response_category
+  - name: join_data
+load:
+  destination: s3
+  bucket: belajarde
+  region: ap-southeast-2

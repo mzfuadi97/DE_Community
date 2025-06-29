@@ -1,4 +1,8 @@
-# Data Pipeline Project
+# Advanced ETL Pipeline Project
+
+## Overview
+
+Project ini adalah sistem ETL (Extract, Transform, Load) yang advanced dengan fitur-fitur production-ready termasuk data validation, external API integration, monitoring, dan alerting.
 
 ## Struktur Repository
 
@@ -6,140 +10,311 @@
 project_root/
 ├── src/
 │   ├── extractors/
+│   │   ├── api_extractor.py      # External API integration
+│   │   └── extract.py            # Data extraction utilities
 │   ├── transformers/
+│   │   ├── enrichment.py         # Data enrichment with external APIs
+│   │   ├── transform.py          # Data transformation logic
+│   │   └── validation.py         # Data validation framework
 │   ├── loaders/
+│   │   └── load.py               # Data loading to local/S3
 │   └── utils/
-├── tests/
+│       ├── alerting.py           # Error alerting system
+│       ├── monitoring.py         # Performance monitoring
+│       └── retry.py              # Retry mechanisms
 ├── config/
-├── docs/
-├── requirements.txt
-├── main.py
-└── README.md
+│   ├── config.yaml               # Main pipeline configuration
+│   ├── api_config.yaml           # External API configuration
+│   └── config.py                 # Configuration loader
+├── tests/                        # Unit and integration tests
+├── docs/                         # Documentation
+├── requirements.txt              # Python dependencies
+├── main.py                       # Main pipeline execution
+└── README.md                     # This file
 ```
 
-## Production-Ready ETL System: Advanced Features
+## Key Features
 
-Project ini dirancang agar mudah dikembangkan menjadi ETL system siap produksi dengan fitur-fitur berikut:
+### 1. Data Validation Framework
+- **Schema validation** - Validasi tipe data, required fields, dan format
+- **Business rules validation** - Custom business logic validation
+- **Data quality checks** - Deteksi missing values, outliers, dan duplicates
+- **Validation reporting** - Generate laporan validasi dengan metrics dan rekomendasi
 
-### 1. Configuration Management
-- **YAML/JSON config files:**
-  - Semua konfigurasi pipeline (data sources, transformasi, tujuan load, dsb) didefinisikan di `config/config.yaml`.
-- **Environment variable support:**
-  - Dapat dikembangkan dengan membaca variabel environment untuk parameter sensitif (misal: kredensial, bucket S3, dsb).
-- **Config validation:**
-  - Validasi konfigurasi dapat ditambahkan di `config/config.py` untuk memastikan semua field wajib sudah terisi dan format benar.
-- **Multiple environment setup (dev/staging/prod):**
-  - Struktur config mendukung banyak environment, misal dengan file `config_dev.yaml`, `config_prod.yaml`, atau field `env` di YAML.
+### 2. External API Integration
+- **User Profile Enrichment** - Menggunakan [randomuser.me](https://randomuser.me/) untuk data user acak
+- **Geolocation Data** - Menggunakan [ip-api.com](http://ip-api.com/) untuk lokasi berdasarkan IP
+- **Weather Data** - Menggunakan OpenWeatherMap API untuk data cuaca
+- **Rate limiting & retry** - Built-in protection untuk API throttling
 
-### 2. Data Pipeline Architecture
-- **Modular design dengan Extract/Transform/Load classes:**
-  - Kode pipeline dipisah ke dalam modul: `src/extractors/`, `src/transformers/`, `src/loaders/`.
-- **Plugin architecture untuk different data sources:**
-  - Mudah menambah extractor baru untuk berbagai sumber data (misal: database, API, file) dengan menambah modul di `src/extractors/`.
-- **Retry mechanisms untuk failed operations:**
-  - Dapat diimplementasikan di modul `src/utils/retry.py` untuk membungkus operasi rawan gagal (misal: upload S3, baca file).
-- **Parallel processing capabilities:**
-  - Pipeline dapat dikembangkan untuk memproses data secara paralel (misal: dengan multiprocessing/threading di Python) pada tahap extract, transform, atau load.
+### 3. Advanced ETL Pipeline
+- **Modular architecture** - Extract, Transform, Load components terpisah
+- **Data enrichment** - Enrich data dengan informasi dari external APIs
+- **Aggregation engine** - Multiple aggregation types (frequency, performance, usage)
+- **Dual output** - Save locally dan upload ke S3 simultaneously
 
-### 3. Monitoring & Alerting
-- **Pipeline performance metrics:**
-  - Modul `src/utils/monitoring.py` dapat digunakan untuk mencatat waktu eksekusi, throughput, dsb.
-- **Data quality monitoring:**
-  - Dapat menambah validasi data (misal: cek missing value, tipe data) di tahap transformasi.
-- **Error alerting system:**
-  - Modul `src/utils/alerting.py` dapat dikembangkan untuk mengirim notifikasi (email, Slack, dsb) jika terjadi error.
-- **Execution time tracking:**
-  - Pipeline dapat mencatat waktu mulai/selesai setiap tahap dan menyimpan log-nya.
+### 4. Monitoring & Alerting
+- **Performance tracking** - Monitor execution time dan throughput
+- **Error handling** - Comprehensive error handling dengan logging
+- **Alerting system** - Notifikasi untuk failures dan issues
 
----
+## External APIs Used
 
-## Persyaratan
+### 1. User Profile API (randomuser.me)
+- **URL**: `https://randomuser.me/api/`
+- **Authentication**: None (public API)
+- **Rate Limit**: ~100 requests/minute
+- **Function**: Generate random user profiles (age, gender, location)
+- **Response Format**: JSON
 
-- Python 3.8 atau lebih baru
-- pip (Python package manager)
-- Akses ke AWS S3 (jika ingin upload ke S3)
-- File data: `user_activities.jsonl` dan `api_logs.jsonl` di root project
+### 2. Geolocation API (ip-api.com)
+- **URL**: `http://ip-api.com/json`
+- **Authentication**: None (public API)
+- **Rate Limit**: 45 requests/minute (free tier)
+- **Function**: Get location data from IP address
+- **Response Format**: JSON
 
-## Setup Environment
+### 3. Weather API (OpenWeatherMap)
+- **URL**: `https://api.openweathermap.org/data/2.5`
+- **Authentication**: API Key required
+- **Rate Limit**: 60 requests/minute (free tier)
+- **Function**: Get weather data by coordinates
+- **Response Format**: JSON
 
-1. **Buat Virtual Environment (Opsional tapi Disarankan)**
+## Configuration
+
+### Main Configuration (`config/config.yaml`)
+```yaml
+data_sources:
+  - name: "api_logs"
+    path: "api_logs.jsonl"
+    type: "jsonl"
+  - name: "user_activities"
+    path: "user_activities.jsonl"
+    type: "jsonl"
+
+output:
+  destination: "both"  # local, s3, or both
+  s3_bucket: "your-bucket-name"
+  s3_region: "ap-southeast-2"
+```
+
+### API Configuration (`config/api_config.yaml`)
+```yaml
+user_profile_api:
+  base_url: "https://randomuser.me/api/"
+  api_key: null
+  rate_limit_per_minute: 100
+  timeout: 30
+  enabled: true
+
+geolocation_api:
+  base_url: "http://ip-api.com/json"
+  api_key: null
+  rate_limit_per_minute: 45
+  timeout: 10
+  enabled: true
+
+weather_api:
+  base_url: "https://api.openweathermap.org/data/2.5"
+  api_key: "${OPENWEATHER_API_KEY}"
+  rate_limit_per_minute: 60
+  timeout: 15
+  enabled: true
+```
+
+## Installation & Setup
+
+### Prerequisites
+- Python 3.8+
+- pip
+- AWS CLI (untuk S3 upload)
+- Virtual environment (recommended)
+
+### Setup Steps
+
+1. **Clone dan setup environment**
    ```bash
-   python -m venv venv
+   git clone <repository-url>
+   cd <project-directory>
+   python -m venv belajarde
    ```
 
-2. **Aktifkan Virtual Environment**
-   - **Windows:**
-     ```bash
-     venv\Scripts\activate
-     ```
-   - **Mac/Linux:**
-     ```bash
-     source venv/bin/activate
-     ```
-
-3. **Install Dependencies**
-   - Pastikan ada file `requirements.txt` (lihat contoh di bawah).
-   - Install dengan:
-     ```bash
-     pip install -r requirements.txt
-     ```
-
-   **Contoh isi `requirements.txt`:**
-   ```
-   pandas
-   boto3
+2. **Activate virtual environment**
+   ```bash
+   # Windows
+   .\belajarde\Scripts\Activate.ps1
+   
+   # Linux/Mac
+   source belajarde/bin/activate
    ```
 
-4. **Konfigurasi AWS (Jika ingin upload ke S3)**
-   - Jalankan:
-     ```bash
-     aws configure
-     ```
-   - Masukkan AWS Access Key, Secret Key, region, dan output format sesuai kebutuhan.
+3. **Install dependencies**
+   ```bash
+   pip install pandas boto3 requests pyyaml
+   ```
 
-5. **Cek/Masukkan File Data**
-   - Pastikan file `user_activities.jsonl` dan `api_logs.jsonl` ada di root project.
+4. **Configure AWS (untuk S3)**
+   ```bash
+   aws configure
+   ```
 
-## Menjalankan Pipeline
+5. **Setup environment variables (optional)**
+   ```bash
+   export OPENWEATHER_API_KEY="your-api-key"
+   ```
 
-Jalankan perintah berikut di terminal:
+## Running the Pipeline
+
+### Basic Execution
 ```bash
 python main.py
 ```
 
-## Output
+### Pipeline Flow
+1. **Data Extraction** - Load user activities dan API logs
+2. **Data Validation** - Validate schema dan business rules
+3. **Data Join** - Merge data berdasarkan user_id
+4. **Data Enrichment** - Enrich dengan external APIs
+5. **Aggregation** - Generate multiple aggregation reports
+6. **Data Loading** - Save locally dan upload ke S3
 
-- File hasil join dan agregasi akan muncul di root project, misal:
-  - `output_data.json`
-  - `action_counts.json`
-  - `page_visit_counts.json`
-  - `device_counts.json`
-  - `avg_time_diff_per_user.json`
-  - `status_code_counts.json`
-  - `avg_response_time_per_endpoint.json`
-  - `request_counts_per_user.json`
-- Semua file output juga otomatis diupload ke S3 (jika konfigurasi benar).
+### Output Files
+- `output_data.json` - Merged and enriched data
+- `validation_report.json` - Data validation results
+- `action_counts.json` - Action frequency per user
+- `page_visit_counts.json` - Page visit statistics
+- `device_counts.json` - Device type distribution
+- `avg_time_diff_per_user.json` - Time-based analytics
+- `status_code_counts.json` - API response statistics
+- `avg_response_time_per_endpoint.json` - Performance metrics
+- `request_counts_per_user.json` - Request frequency
+- `age_distribution.json` - User age demographics (if enriched)
+- `gender_distribution.json` - User gender stats (if enriched)
+- `country_distribution.json` - Geographic distribution (if enriched)
+- `weather_distribution.json` - Weather conditions (if enriched)
 
-## Testing
+## Data Validation
 
-- Tempatkan script/unit test di folder `tests/`.
-- Jalankan dengan pytest/unittest sesuai kebutuhan.
+### Schema Validation
+- Required fields checking
+- Data type validation
+- Format validation (datetime, email, etc.)
+- Value range validation
+
+### Business Rules Validation
+- Response time must be positive
+- Status codes must be valid HTTP codes
+- User IDs must not be empty
+- Custom business logic validation
+
+### Validation Report
+```json
+{
+  "validation_summary": {
+    "total_validations": 2,
+    "passed_validations": 2,
+    "failed_validations": 0,
+    "total_errors": 0,
+    "total_warnings": 0
+  },
+  "detailed_results": [...],
+  "recommendations": [...]
+}
+```
+
+## Error Handling
+
+### API Integration Errors
+- Network timeout handling
+- Rate limit protection
+- Retry mechanisms with exponential backoff
+- Graceful degradation when APIs fail
+
+### Data Processing Errors
+- Missing data handling
+- Invalid format recovery
+- Partial failure recovery
+- Comprehensive error logging
+
+## Monitoring & Performance
+
+### Performance Metrics
+- Execution time per stage
+- Data processing throughput
+- API call success rates
+- Memory usage tracking
+
+### Logging
+- Structured logging with different levels
+- Performance metrics logging
+- Error tracking and reporting
+- Audit trail for data processing
+
+## Development & Testing
+
+### Project Structure
+- Modular design for easy testing
+- Separation of concerns
+- Configurable components
+- Extensible architecture
+
+### Testing Strategy
+- Unit tests for individual components
+- Integration tests for API calls
+- End-to-end pipeline testing
+- Performance benchmarking
+
+### Best Practices
+- Code documentation
+- Type hints
+- Error handling
+- Logging standards
+- Configuration management
+
+## Troubleshooting
+
+### Common Issues
+1. **API Rate Limiting** - Pipeline automatically handles rate limits
+2. **Network Timeouts** - Retry mechanisms with exponential backoff
+3. **Missing Data** - Graceful handling with validation warnings
+4. **S3 Upload Failures** - Local backup with retry logic
+
+### Debug Mode
+Enable detailed logging by setting log level to DEBUG in main.py
+
+## Future Enhancements
+
+### Planned Features
+- Real-time data processing
+- Machine learning integration
+- Advanced analytics dashboard
+- Multi-tenant support
+- Cloud-native deployment
+
+### Scalability Improvements
+- Parallel processing
+- Distributed computing
+- Caching mechanisms
+- Database integration
 
 ---
 
-**Catatan:**  
-- Jika ada perubahan struktur folder, pastikan semua import di file Python sudah disesuaikan.
-- Untuk pengembangan lebih lanjut, tambahkan dependensi ke `requirements.txt` sesuai kebutuhan. 
+## License
 
-__pycache__/
-*.py[cod]
-*$py.class
-venv/
-belajarde/
-.vscode/
-.DS_Store
-.ipynb_checkpoints
-*.log
-*.jsonl
-*.json
-output_data.json
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
+
+## Support
+
+For issues and questions:
+- Create an issue in the repository
+- Check the documentation in `/docs`
+- Review the troubleshooting section 

@@ -1,0 +1,31 @@
+{
+  "validation_summary": {
+    "total_validations": 2,
+    "passed_validations": 2,
+    "failed_validations": 0,
+    "total_errors": 0,
+    "total_warnings": 0
+  },
+  "detailed_results": [
+    {
+      "data_type": "user_activities",
+      "total_records": 10000,
+      "validation_time": "2025-06-29T13:06:43.939150",
+      "errors": [],
+      "warnings": [],
+      "passed": true
+    },
+    {
+      "data_type": "api_logs",
+      "total_records": 5000,
+      "validation_time": "2025-06-29T13:06:43.945952",
+      "errors": [],
+      "warnings": [],
+      "passed": true
+    }
+  ],
+  "recommendations": [
+    "Data quality looks good, proceed with processing"
+  ],
+  "generated_at": "2025-06-29T13:06:43.950997"
+}

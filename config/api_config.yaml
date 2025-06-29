@@ -1,0 +1,41 @@
+# Configuration untuk External APIs
+# File ini berisi konfigurasi untuk berbagai API yang digunakan untuk enrichment data
+
+# User Profile API - untuk mendapatkan informasi tambahan user
+user_profile_api:
+  base_url: "https://randomuser.me/api/"
+  api_key: null  # Tidak perlu API key
+  rate_limit_per_minute: 100
+  timeout: 30
+  enabled: true
+
+# Geolocation API - untuk mendapatkan lokasi berdasarkan IP address
+geolocation_api:
+  base_url: "http://ip-api.com/json"
+  api_key: null  # Free tier tidak memerlukan API key
+  rate_limit_per_minute: 45  # ip-api.com free tier limit
+  timeout: 10
+  enabled: false  # Disabled karena ip-api.com tidak stabil
+
+# Weather API - untuk mendapatkan data cuaca berdasarkan koordinat
+weather_api:
+  base_url: "https://api.openweathermap.org/data/2.5"
+  api_key: "${OPENWEATHER_API_KEY}"  # Gunakan environment variable
+  rate_limit_per_minute: 60
+  timeout: 15
+  enabled: true
+
+# API untuk mendapatkan informasi device/browser
+device_api:
+  base_url: "https://api.useragent.com"
+  api_key: "${DEVICE_API_KEY}"
+  rate_limit_per_minute: 200
+  timeout: 20
+  enabled: false  # Disabled by default
+
+# Global settings untuk semua APIs
+global_settings:
+  retry_attempts: 3
+  retry_delay: 1
+  cache_enabled: true
+  cache_ttl: 3600  # 1 hour in seconds 

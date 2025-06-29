@@ -12,5 +12,5 @@ transformations:
   - name: join_data
 load:
   destination: s3
-  bucket: belajarde
-  region: ap-southeast-2
+  bucket: YOUR_BUCKET_NAME
+  region: YOUR_REGION
